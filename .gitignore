@@ -43,5 +43,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-lib/store_dsn.dart
+lib/core/sentry/store_dsn.dart
 lib/core/navigation/app_router.gr.dart
