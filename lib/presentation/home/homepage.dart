@@ -24,50 +24,55 @@ class _MyHomePageScreenState extends State<MyHomePageScreen> {
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: Text(widget.title)),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            // Expanded(
-            //   child: ListView.builder(
-            //       itemCount: 2,
-            //       itemBuilder: ((context, index) {
-            //         List ff = [];
-            //         return Text(ff[index].toString());
-            //       })),
-            // ),`
-            ElevatedButton(
-                onPressed: () => SentryReporter.setupPerformance(
-                      transactionName: 'T3',
-                      operation: 'Third transaction',
-                    ),
-                child: const Text('T3')),
-            ElevatedButton(
-                onPressed: () => SentryReporter.setupPerformance(
-                      transactionName: 'T2',
-                      operation: 'second transaction',
-                    ),
-                child: const Text('T2')),
-            ElevatedButton(
-                onPressed: () => SentryReporter.loadUserDataOnClick(),
-                child: const Text('Load User Data')),
-            TextButton(
-                onPressed: () async => await throwDartException(),
-                child: const Text('Dart Exception')),
-            TextButton(
-                onPressed: () async => await throwAsyncDartException(),
-                child: const Text('Async dart Exception')),
-            ElevatedButton(
-                onPressed: () => context.pushRoute(const ApiRoute()),
-                child: const Text('Go to API Screen')),
-            ElevatedButton(
-                onPressed: () => context.pushRoute(const WebsocketRoute()),
-                child: const Text('Go to WEBSOCKET Screen')),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+
+              const Text('You have pushed the button this many times:'),
+              Text(
+                '$_counter',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              ElevatedButton(
+                  onPressed: () => context.pushRoute(const NumberSwapRoute()),
+                  child: const Text('Go to NUMBER SWAP Screen')),
+              ElevatedButton(
+                  onPressed: () => context.pushRoute(const NumberUpdateRoute()),
+                  child: const Text('Go to NUMBER UPDATE Screen')),
+              ElevatedButton(
+                  onPressed: () => context.pushRoute(const DigitUpdateRoute()),
+                  child: const Text('Go to DIGIT UPDATE Screen')),
+              ElevatedButton(
+                  onPressed: () => SentryReporter.setupPerformance(
+                        transactionName: 'T3',
+                        operation: 'Third transaction',
+                      ),
+                  child: const Text('T3')),
+              ElevatedButton(
+                  onPressed: () => SentryReporter.setupPerformance(
+                        transactionName: 'T2',
+                        operation: 'second transaction',
+                      ),
+                  child: const Text('T2')),
+              ElevatedButton(
+                  onPressed: () => SentryReporter.loadUserDataOnClick(),
+                  child: const Text('Load User Data')),
+              TextButton(
+                  onPressed: () async => await throwDartException(),
+                  child: const Text('Dart Exception')),
+              TextButton(
+                  onPressed: () async => await throwAsyncDartException(),
+                  child: const Text('Async dart Exception')),
+              ElevatedButton(
+                  onPressed: () => context.pushRoute(const ApiRoute()),
+                  child: const Text('Go to API Screen')),
+              ElevatedButton(
+                  onPressed: () => context.pushRoute(const WebsocketRoute()),
+                  child: const Text('Go to WEBSOCKET Screen')),
+            ],
+          ),
         ),
       ),
       floatingActionButton: Row(

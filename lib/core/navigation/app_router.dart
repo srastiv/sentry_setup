@@ -11,13 +11,12 @@ class AppRouter extends $AppRouter {
         AutoRoute(
           initial: true,
           path: '/',
-          page: MyHomePageRoute.page, 
+          page: MyHomePageRoute.page,
         ),
-        AutoRoute(
-          page: ApiRoute.page, 
-        ),
-        AutoRoute(
-          page: WebsocketRoute.page, 
-        ),
+        AutoRoute(page: ApiRoute.page),
+        AutoRoute(page: WebsocketRoute.page),
+        AutoRoute(page: NumberUpdateRoute.page),
+        AutoRoute(page: NumberSwapRoute.page),
+        AutoRoute(page: DigitUpdateRoute.page),
       ];
 }
