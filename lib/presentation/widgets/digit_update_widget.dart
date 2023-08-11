@@ -20,15 +20,24 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
   double randomValue = 0.0;
   double previousValue = 0.0;
   bool isAnimating = false;
+  int counter = 0;
 
   @override
   void initState() {
+    super.initState();
+    initializeAnimation();
+    startAnimation();
+  }
+
+  void initializeAnimation() {
     randomValue = generateRandomValue();
     previousValue = randomValue;
     _numbersStreamController.add(randomValue);
 
     animationController = AnimationController(
-        duration: const Duration(milliseconds: 200), vsync: this);
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
 
     animation = Tween<double>(
       begin: previousValue,
@@ -37,17 +46,17 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
       CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
     );
 
-    // Listen for animation status changes
     animationController!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         animationController!.reset();
         animationController!.forward();
       }
     });
-    // Start the initial animation
+  }
+
+  void startAnimation() {
     animationController!.forward();
 
-    // Use Timer.periodic to update animation and flip counter values
     Timer.periodic(const Duration(seconds: 2), (timer) {
       setState(() {
         previousValue = randomValue;
@@ -75,8 +84,6 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
         });
       }
     });
-
-    super.initState();
   }
 
   double generateRandomValue() {
@@ -95,7 +102,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
   void didUpdateWidget(covariant DigitUpdateWidget oldWidget) {
     print('ZZZZZZZ: ${oldWidget.key.toString()}');
     super.didUpdateWidget(oldWidget);
-
+    print('ZZZZZZZ: ${oldWidget.key.toString()}');
     randomValue = generateRandomValue();
     _numbersStreamController.add(randomValue);
     animation = Tween<double>(
@@ -107,7 +114,6 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
     animationController!.forward(from: 0.0);
     previousValue = randomValue;
   }
-  int counter = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +125,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
             final number = snapshot.data!;
             final textColor = textColour(
               isAnimating: isAnimating,
-              currentNumber: animation.value, // Use animation value here
+              currentNumber: animation.value,
               nextNumber: number,
             );
             return Column(
@@ -139,7 +145,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
                       ? 'Level: ▲'
                       : number == 0
                           ? "Level: "
-                          : "Level: 🔻",
+                          : "Level: 🔻", //▼
                   thousandSeparator: ',',
                   fractionDigits: 2,
                   curve: Curves.easeInOutCirc,
@@ -154,7 +160,9 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
                 ),
                 TextButton(
                   onPressed: () {
-                    setState(() {counter++;});
+                    setState(() {
+                      counter++;
+                    });
                   },
                   child: const Text('DID UPDATE WIDGET?'),
                 ),
@@ -165,8 +173,6 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
             return const CircularProgressIndicator();
           }
         },
-        // did update widget
-        // event bus
       ),
     );
   }
