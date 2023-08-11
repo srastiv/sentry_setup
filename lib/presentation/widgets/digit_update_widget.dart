@@ -27,8 +27,8 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
     previousValue = randomValue;
     _numbersStreamController.add(randomValue);
 
-    animationController =
-        AnimationController(duration: const Duration(seconds: 1), vsync: this);
+    animationController = AnimationController(
+        duration: const Duration(milliseconds: 200), vsync: this);
 
     animation = Tween<double>(
       begin: previousValue,
@@ -48,7 +48,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
     animationController!.forward();
 
     // Use Timer.periodic to update animation and flip counter values
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    Timer.periodic(const Duration(seconds: 2), (timer) {
       setState(() {
         previousValue = randomValue;
         randomValue = generateRandomValue();
@@ -62,6 +62,18 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
         CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
       );
       animationController!.forward(from: 0.0);
+    });
+
+    animationController!.addStatusListener((status) {
+      if (status == AnimationStatus.forward) {
+        setState(() {
+          isAnimating = true;
+        });
+      } else if (status == AnimationStatus.completed) {
+        setState(() {
+          isAnimating = false;
+        });
+      }
     });
 
     super.initState();
@@ -80,7 +92,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
   }
 
   @override
-  void didUpdateWidget(DigitUpdateWidget oldWidget) {
+  void didUpdateWidget(covariant DigitUpdateWidget oldWidget) {
     print('ZZZZZZZ: ${oldWidget.key.toString()}');
     super.didUpdateWidget(oldWidget);
 
@@ -95,6 +107,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
     animationController!.forward(from: 0.0);
     previousValue = randomValue;
   }
+  int counter = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +117,11 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
         builder: (context, AsyncSnapshot<double> snapshot) {
           if (snapshot.hasData) {
             final number = snapshot.data!;
+            final textColor = textColour(
+              isAnimating: isAnimating,
+              currentNumber: animation.value, // Use animation value here
+              nextNumber: number,
+            );
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -131,25 +149,38 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -4.0,
-                    color: number > 0
-                        ? const Color.fromARGB(255, 26, 149, 102)
-                        : number == 0
-                            ? const Color.fromARGB(255, 130, 130, 130)
-                            : const Color.fromARGB(255, 229, 42, 42),
+                    color: textColor,
                   ),
                 ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {counter++;});
+                  },
+                  child: const Text('DID UPDATE WIDGET?'),
+                ),
+                Text(counter.toString()),
               ],
             );
           } else {
             return const CircularProgressIndicator();
           }
         },
-        // remove list
-        // add color during transition
-        // compare current to next number
         // did update widget
         // event bus
       ),
     );
+  }
+
+  Color textColour({
+    required bool isAnimating,
+    required double currentNumber,
+    required double nextNumber,
+  }) {
+    if (isAnimating && currentNumber < nextNumber) {
+      return const Color.fromARGB(255, 26, 149, 102);
+    } else if (isAnimating && currentNumber > nextNumber) {
+      return const Color.fromARGB(255, 229, 42, 42);
+    }
+    return const Color.fromARGB(255, 0, 0, 0);
   }
 }
