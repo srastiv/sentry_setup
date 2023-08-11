@@ -44,8 +44,8 @@ dependencies:
   web_socket_channel: ^2.4.0
 
   # below packages are for odometer animations
-  odometer: ^3.0.0
-  animated_flip_counter: ^0.2.6
+  # odometer: ^3.0.0
+  # animated_flip_counter: ^0.2.6  # using this in code
 
 dev_dependencies:
   auto_route_generator: ^7.3.0                  

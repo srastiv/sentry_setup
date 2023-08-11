@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'package:animated_flip_counter/animated_flip_counter.dart';
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:odometer/odometer.dart';
+import 'package:sentry_poc/presentation/widgets/animated_flip_counter.dart';
 
 class DigitUpdateWidget extends StatefulWidget {
   const DigitUpdateWidget({Key? key}) : super(key: key);
@@ -12,97 +12,64 @@ class DigitUpdateWidget extends StatefulWidget {
 
 class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
     with SingleTickerProviderStateMixin {
-  final StreamController<List<double>> _numbersStreamController =
-      StreamController<List<double>>();
+  final StreamController<double> _numbersStreamController =
+      StreamController<double>();
 
   AnimationController? animationController;
-  late Animation<OdometerNumber> animation;
-  int _currentIndex = 0;
-  final List<double> numbers = [
-    0,
-    -1.2,
-    5.23,
-    -8.5,
-    10.6,
-    -15.76,
-    18.87,
-    -90.11,
-    94.23,
-    -97.76,
-    99.26,
-    -100.99,
-    103.76,
-    -107.09,
-    700.16,
-    -750.4,
-    887,
-    -888,
-    996,
-    -997.35,
-    998,
-    -999,
-    1000,
-    -1234,
-    1235.35,
-    -1236,
-    2000,
-    -2001,
-    2002.54,
-    -2003,
-    9000.53,
-    -9001,
-    9997,
-    -9998,
-    9999.35,
-    -10000.34,
-    12345,
-  ];
+  late Animation<double> animation;
+  double randomValue = 0.0;
+  double previousValue = 0.0;
+  bool isAnimating = false;
 
   @override
   void initState() {
-    _numbersStreamController.add(numbers);
+    randomValue = generateRandomValue();
+    previousValue = randomValue;
+    _numbersStreamController.add(randomValue);
 
     animationController =
-        AnimationController(duration: const Duration(seconds: 2), vsync: this);
-    animation = OdometerTween(
-      begin: OdometerNumber(numbers[0].toInt()),
-      end: OdometerNumber(numbers[1].toInt()),
+        AnimationController(duration: const Duration(seconds: 1), vsync: this);
+
+    animation = Tween<double>(
+      begin: previousValue,
+      end: randomValue,
     ).animate(
       CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
     );
 
-    // Shuffle the numbers list
-    numbers.shuffle();
-
-    // Automatically update the numbers every few seconds
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_currentIndex < numbers.length - 2) {
-        setState(() {
-          _currentIndex++;
-          animation = OdometerTween(
-            begin: OdometerNumber(numbers[_currentIndex].toInt()),
-            end: OdometerNumber(numbers[_currentIndex + 1].toInt()),
-          ).animate(
-            CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
-          );
-        });
-        animationController!.forward();
-      } else {
-        // Restart animation when numbers reach the end
-        setState(() {
-          _currentIndex = 0;
-          animation = OdometerTween(
-            begin: OdometerNumber(numbers[numbers.length - 1].toInt()),
-            end: OdometerNumber(numbers[0].toInt()),
-          ).animate(
-            CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
-          );
-        });
+    // Listen for animation status changes
+    animationController!.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        animationController!.reset();
         animationController!.forward();
       }
     });
+    // Start the initial animation
+    animationController!.forward();
+
+    // Use Timer.periodic to update animation and flip counter values
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        previousValue = randomValue;
+        randomValue = generateRandomValue();
+        _numbersStreamController.add(randomValue);
+      });
+
+      animation = Tween<double>(
+        begin: previousValue,
+        end: randomValue,
+      ).animate(
+        CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
+      );
+      animationController!.forward(from: 0.0);
+    });
 
     super.initState();
+  }
+
+  double generateRandomValue() {
+    final random = Random();
+    return (random.nextDouble() * 40001.0) - 20000.0;
   }
 
   @override
@@ -113,92 +80,48 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
   }
 
   @override
+  void didUpdateWidget(DigitUpdateWidget oldWidget) {
+    print('ZZZZZZZ: ${oldWidget.key.toString()}');
+    super.didUpdateWidget(oldWidget);
+
+    randomValue = generateRandomValue();
+    _numbersStreamController.add(randomValue);
+    animation = Tween<double>(
+      begin: previousValue,
+      end: randomValue,
+    ).animate(
+      CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
+    );
+    animationController!.forward(from: 0.0);
+    previousValue = randomValue;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Center(
-      child: StreamBuilder<List<double>>(
+      child: StreamBuilder<double>(
         stream: _numbersStreamController.stream,
-        builder: (context, AsyncSnapshot<List<double>> snapshot) {
+        builder: (context, AsyncSnapshot<double> snapshot) {
           if (snapshot.hasData) {
-            final numbersList = snapshot.data!;
+            final number = snapshot.data!;
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                const Text(
-                  'Odometer package',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-                ),
-                const SizedBox(height: 8),
-                AnimatedSlideOdometerNumber(
-                  letterWidth: 20,
-                  odometerNumber:
-                      OdometerNumber(numbersList[_currentIndex].toInt()),
-                  duration: const Duration(milliseconds: 300),
-                  numberTextStyle: const TextStyle(fontSize: 20),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 30),
-                  child: SlideOdometerTransition(
-                    letterWidth: 20,
-                    odometerAnimation: animation,
-                    numberTextStyle: const TextStyle(fontSize: 20),
-                  ),
-                ),
-                const Divider(thickness: 2, height: 24),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //   children: [
-                //     ElevatedButton(
-                //       onPressed: () {
-                //         if (_currentIndex > 0) {
-                //           setState(() {
-                //             _currentIndex--;
-                //             animation = OdometerTween(
-                //               begin: OdometerNumber(numbersList[_currentIndex]),
-                //               end: OdometerNumber(
-                //                   numbersList[_currentIndex + 1]),
-                //             ).animate(
-                //               CurvedAnimation(
-                //                   curve: Curves.easeIn,
-                //                   parent: animationController!),
-                //             );
-                //           });
-                //           animationController!.reverse();
-                //         }
-                //       },
-                //       child: const Text('Reverse'),
-                //     ),
-                //     ElevatedButton(
-                //       onPressed: () {
-                //         if (_currentIndex < numbersList.length - 2) {
-                //           setState(() {
-                //             _currentIndex++;
-                //             animation = OdometerTween(
-                //               begin: OdometerNumber(numbersList[_currentIndex]),
-                //               end: OdometerNumber(
-                //                   numbersList[_currentIndex + 1]),
-                //             ).animate(
-                //               CurvedAnimation(
-                //                   curve: Curves.easeIn,
-                //                   parent: animationController!),
-                //             );
-                //           });
-                //           animationController!.forward();
-                //         }
-                //       },
-                //       child: const Text('Forward'),
-                //     ),
-                //   ],
-                // ),
-                const Divider(thickness: 2, height: 24),
                 const Text(
                   'Animated Flip Counter package',
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
                 ),
                 const SizedBox(height: 8),
                 AnimatedFlipCounter(
+                  key: const Key('animatedNumbers'),
                   padding: const EdgeInsets.symmetric(horizontal: 2),
-                  value: numbersList[_currentIndex],
-                  prefix: "Level: ",
+                  value: number,
+                  suffix: ' %',
+                  prefix: number > 0
+                      ? 'Level: ▲'
+                      : number == 0
+                          ? "Level: "
+                          : "Level: 🔻",
                   thousandSeparator: ',',
                   fractionDigits: 2,
                   curve: Curves.easeInOutCirc,
@@ -208,9 +131,9 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -4.0,
-                    color: numbersList[_currentIndex] > 0
+                    color: number > 0
                         ? const Color.fromARGB(255, 26, 149, 102)
-                        : numbersList[_currentIndex] == 0
+                        : number == 0
                             ? const Color.fromARGB(255, 130, 130, 130)
                             : const Color.fromARGB(255, 229, 42, 42),
                   ),
@@ -221,6 +144,11 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
             return const CircularProgressIndicator();
           }
         },
+        // remove list
+        // add color during transition
+        // compare current to next number
+        // did update widget
+        // event bus
       ),
     );
   }
