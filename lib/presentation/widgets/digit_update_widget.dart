@@ -20,7 +20,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
   double randomValue = 0.0;
   double previousValue = 0.0;
   bool isAnimating = false;
-  int counter = 0;
+  final Duration duration = const Duration(milliseconds: 300);
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
     _numbersStreamController.add(randomValue);
 
     animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: duration,
       vsync: this,
     );
 
@@ -88,7 +88,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
 
   double generateRandomValue() {
     final random = Random();
-    return (random.nextDouble() * 40001.0) - 20000.0;
+    return (random.nextDouble() * 1001.0) - 1000.0;
   }
 
   @override
@@ -98,22 +98,22 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
     super.dispose();
   }
 
-  @override
-  void didUpdateWidget(covariant DigitUpdateWidget oldWidget) {
-    print('ZZZZZZZ: ${oldWidget.key.toString()}');
-    super.didUpdateWidget(oldWidget);
-    print('ZZZZZZZ: ${oldWidget.key.toString()}');
-    randomValue = generateRandomValue();
-    _numbersStreamController.add(randomValue);
-    animation = Tween<double>(
-      begin: previousValue,
-      end: randomValue,
-    ).animate(
-      CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
-    );
-    animationController!.forward(from: 0.0);
-    previousValue = randomValue;
-  }
+  // @override
+  // void didUpdateWidget(covariant DigitUpdateWidget oldWidget) {
+  //   print('ZZZZZZZ: ${oldWidget.key.toString()}');
+  //   super.didUpdateWidget(oldWidget);
+  //   print('ZZZZZZZ: ${oldWidget.key.toString()}');
+  //   randomValue = generateRandomValue();
+  //   _numbersStreamController.add(randomValue);
+  //   animation = Tween<double>(
+  //     begin: previousValue,
+  //     end: randomValue,
+  //   ).animate(
+  //     CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
+  //   );
+  //   animationController!.forward(from: 0.0);
+  //   previousValue = randomValue;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +149,7 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
                   thousandSeparator: ',',
                   fractionDigits: 2,
                   curve: Curves.easeInOutCirc,
-                  duration: const Duration(milliseconds: 300),
+                  duration: duration,
                   mainAxisAlignment: MainAxisAlignment.end,
                   textStyle: TextStyle(
                     fontSize: 40,
@@ -158,15 +158,6 @@ class _DigitUpdateWidgetState extends State<DigitUpdateWidget>
                     color: textColor,
                   ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      counter++;
-                    });
-                  },
-                  child: const Text('DID UPDATE WIDGET?'),
-                ),
-                Text(counter.toString()),
               ],
             );
           } else {
